@@ -66,8 +66,16 @@ public class DatabaseVerticle extends AbstractVerticle {
     sqlQueries.put(SqlQuery.CREATE_FACE, queriesProps.getProperty("create-face"));
     sqlQueries.put(SqlQuery.SAVE_FACE, queriesProps.getProperty("save-face"));
     sqlQueries.put(SqlQuery.DELETE_FACE, queriesProps.getProperty("delete-face"));
-    sqlQueries.put(SqlQuery.ALL_FACES_DATA, queriesProps.getProperty("all-faces-data"));
+    sqlQueries.put(SqlQuery.DELETE_ALL_FACES, queriesProps.getProperty("delete-all-faces"));
     sqlQueries.put(SqlQuery.GET_FACE_BY_ID, queriesProps.getProperty("get-face-by-id"));
+
+    sqlQueries.put(SqlQuery.CREATE_FIB_TABLE, queriesProps.getProperty("create-fib-table"));
+    sqlQueries.put(SqlQuery.ALL_FIB, queriesProps.getProperty("all-fib"));
+    sqlQueries.put(SqlQuery.GET_FIB_ENTRY, queriesProps.getProperty("get-fib-entry"));
+    sqlQueries.put(SqlQuery.CREATE_FIB_ENTRY, queriesProps.getProperty("create-fib-entry"));
+    sqlQueries.put(SqlQuery.SAVE_FIB_ENTRY, queriesProps.getProperty("save-fib-entry"));
+    sqlQueries.put(SqlQuery.DELETE_FIB_ENTRY, queriesProps.getProperty("delete-fib-entry"));
+    sqlQueries.put(SqlQuery.GET_FIB_BY_PREFIX, queriesProps.getProperty("get-fib-by-prefix"));
     return sqlQueries;
   }
 }

@@ -28,11 +28,10 @@ public interface DatabaseService {
     return new io.vertx.nms.agent.database.reactivex.DatabaseService(new DatabaseServiceVertxEBProxy(vertx, address));
   }
 
-  @Fluent
-  DatabaseService fetchAllFaces(Handler<AsyncResult<JsonArray>> resultHandler);
+  // Faces queries
 
   @Fluent
-  DatabaseService fetchFace(String name, Handler<AsyncResult<JsonObject>> resultHandler);
+  DatabaseService fetchAllFaces(Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   @Fluent
   DatabaseService fetchFaceById(int id, Handler<AsyncResult<JsonObject>> resultHandler);
@@ -47,5 +46,29 @@ public interface DatabaseService {
   DatabaseService deleteFace(int id, Handler<AsyncResult<Void>> resultHandler);
 
   @Fluent
-  DatabaseService fetchAllFacesData(Handler<AsyncResult<List<JsonObject>>> resultHandler);
+  DatabaseService deleteAllFaces(Handler<AsyncResult<Void>> resultHandler);
+
+
+  // FIB queries
+
+  @Fluent
+  DatabaseService fetchAllFib(Handler<AsyncResult<JsonArray>> resultHandler);
+
+  @Fluent
+  DatabaseService fetchFibEntry(String name, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  @Fluent
+  DatabaseService fetchFibEntryById(int id, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  @Fluent
+  DatabaseService createFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler);
+
+  @Fluent
+  DatabaseService saveFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler);
+
+  @Fluent
+  DatabaseService deleteFibEntry(String prefix, Handler<AsyncResult<Void>> resultHandler);
+
+  @Fluent
+  DatabaseService fetchAllFibEntries(Handler<AsyncResult<List<JsonObject>>> resultHandler);
 }

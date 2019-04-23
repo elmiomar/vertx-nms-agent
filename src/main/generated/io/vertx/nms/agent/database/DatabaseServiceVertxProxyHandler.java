@@ -118,12 +118,7 @@ public class DatabaseServiceVertxProxyHandler extends ProxyHandler {
       accessed();
       switch (action) {
         case "fetchAllFaces": {
-          service.fetchAllFaces(HelperUtils.createHandler(msg));
-          break;
-        }
-        case "fetchFace": {
-          service.fetchFace((java.lang.String)json.getValue("name"),
-                        HelperUtils.createHandler(msg));
+          service.fetchAllFaces(HelperUtils.createListHandler(msg));
           break;
         }
         case "fetchFaceById": {
@@ -150,8 +145,45 @@ public class DatabaseServiceVertxProxyHandler extends ProxyHandler {
                         HelperUtils.createHandler(msg));
           break;
         }
-        case "fetchAllFacesData": {
-          service.fetchAllFacesData(HelperUtils.createListHandler(msg));
+        case "deleteAllFaces": {
+          service.deleteAllFaces(HelperUtils.createHandler(msg));
+          break;
+        }
+        case "fetchAllFib": {
+          service.fetchAllFib(HelperUtils.createHandler(msg));
+          break;
+        }
+        case "fetchFibEntry": {
+          service.fetchFibEntry((java.lang.String)json.getValue("name"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "fetchFibEntryById": {
+          service.fetchFibEntryById(json.getValue("id") == null ? null : (json.getLong("id").intValue()),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "createFibEntry": {
+          service.createFibEntry((java.lang.String)json.getValue("prefix"),
+                        json.getValue("id") == null ? null : (json.getLong("id").intValue()),
+                        json.getValue("cost") == null ? null : (json.getLong("cost").intValue()),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "saveFibEntry": {
+          service.saveFibEntry((java.lang.String)json.getValue("prefix"),
+                        json.getValue("id") == null ? null : (json.getLong("id").intValue()),
+                        json.getValue("cost") == null ? null : (json.getLong("cost").intValue()),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "deleteFibEntry": {
+          service.deleteFibEntry((java.lang.String)json.getValue("prefix"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "fetchAllFibEntries": {
+          service.fetchAllFibEntries(HelperUtils.createListHandler(msg));
           break;
         }
         default: throw new IllegalStateException("Invalid action: " + action);

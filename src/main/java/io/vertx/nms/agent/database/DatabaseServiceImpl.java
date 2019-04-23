@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 
-
 class DatabaseServiceImpl implements DatabaseService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseServiceImpl.class);
@@ -26,99 +25,106 @@ class DatabaseServiceImpl implements DatabaseService {
   private final HashMap<SqlQuery, String> sqlQueries;
   private final JDBCClient dbClient;
 
-  DatabaseServiceImpl(io.vertx.ext.jdbc.JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries, Handler<AsyncResult<DatabaseService>> readyHandler) {
+  DatabaseServiceImpl(io.vertx.ext.jdbc.JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries,
+      Handler<AsyncResult<DatabaseService>> readyHandler) {
     this.dbClient = new JDBCClient(dbClient);
     this.sqlQueries = sqlQueries;
 
-    SQLClientHelper.usingConnectionSingle(this.dbClient, conn -> conn
-      .rxExecute(sqlQueries.get(SqlQuery.CREATE_FACES_TABLE))
-      .andThen(Single.just(this)))
-      .subscribe(SingleHelper.toObserver(readyHandler));
+    SQLClientHelper
+        .usingConnectionSingle(this.dbClient,
+            conn -> conn.rxExecute(sqlQueries.get(SqlQuery.CREATE_FACES_TABLE)).andThen(Single.just(this)))
+        .subscribe(SingleHelper.toObserver(readyHandler));
   }
 
+  // Faces queries
+
   @Override
-  public DatabaseService fetchAllFaces(Handler<AsyncResult<JsonArray>> resultHandler) {
-    dbClient.rxQuery(sqlQueries.get(SqlQuery.ALL_FACES))
-      .flatMapPublisher(res -> {
-        List<JsonArray> results = res.getResults();
-        return Flowable.fromIterable(results);
-      })
-      .map(json -> json.getString(0))
-      .sorted()
-      .collect(JsonArray::new, JsonArray::add)
-      .subscribe(SingleHelper.toObserver(resultHandler));
+  public DatabaseService fetchAllFaces(Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    dbClient.rxQuery(sqlQueries.get(SqlQuery.ALL_FACES)).map(ResultSet::getRows)
+        .subscribe(SingleHelper.toObserver(resultHandler));
     return this;
   }
 
-  @Override
-  public DatabaseService fetchFace(String name, Handler<AsyncResult<JsonObject>> resultHandler) {
-    dbClient.rxQueryWithParams(sqlQueries.get(SqlQuery.GET_FACE), new JsonArray().add(name))
-      .map(result -> {
-        if (result.getNumRows() > 0) {
-          JsonArray row = result.getResults().get(0);
-          return new JsonObject()
-            .put("found", true)
-            .put("id", row.getInteger(0))
-            .put("rawContent", row.getString(1));
-        } else {
-          return new JsonObject().put("found", false);
-        }
-      })
-      .subscribe(SingleHelper.toObserver(resultHandler));
-    return this;
-  }
 
   @Override
   public DatabaseService fetchFaceById(int id, Handler<AsyncResult<JsonObject>> resultHandler) {
-    Single<ResultSet> resultSet = dbClient.rxQueryWithParams(
-      sqlQueries.get(SqlQuery.GET_FACE_BY_ID), new JsonArray().add(id));
-    resultSet
-      .map(result -> {
-        if (result.getNumRows() > 0) {
-          JsonObject row = result.getRows().get(0);
-          return new JsonObject()
-            .put("found", true)
-            .put("id", row.getInteger("ID"))
-            .put("name", row.getString("NAME"))
-            .put("content", row.getString("CONTENT"));
-        } else {
-          return new JsonObject().put("found", false);
-        }
-      })
-      .subscribe(SingleHelper.toObserver(resultHandler));
+    Single<ResultSet> resultSet = dbClient.rxQueryWithParams(sqlQueries.get(SqlQuery.GET_FACE_BY_ID),
+        new JsonArray().add(id));
+    resultSet.map(result -> {
+      if (result.getNumRows() > 0) {
+        JsonObject row = result.getRows().get(0);
+        return new JsonObject().put("found", true).put("id", row.getInteger("ID"))
+            .put("remote", row.getString("REMOTE")).put("local", row.getString("LOCAL"));
+      } else {
+        return new JsonObject().put("found", false);
+      }
+    }).subscribe(SingleHelper.toObserver(resultHandler));
     return this;
   }
 
   @Override
   public DatabaseService createFace(int id, String remote, String local, Handler<AsyncResult<Void>> resultHandler) {
     dbClient.rxUpdateWithParams(sqlQueries.get(SqlQuery.CREATE_FACE), new JsonArray().add(id).add(remote).add(local))
-      .toCompletable()
-      .subscribe(CompletableHelper.toObserver(resultHandler));
+        .toCompletable().subscribe(CompletableHelper.toObserver(resultHandler));
     return this;
   }
 
   @Override
   public DatabaseService saveFace(int id, String remote, String local, Handler<AsyncResult<Void>> resultHandler) {
     dbClient.rxUpdateWithParams(sqlQueries.get(SqlQuery.SAVE_FACE), new JsonArray().add(remote).add(local).add(id))
-      .toCompletable()
-      .subscribe(CompletableHelper.toObserver(resultHandler));
+        .toCompletable().subscribe(CompletableHelper.toObserver(resultHandler));
     return this;
   }
 
   @Override
   public DatabaseService deleteFace(int id, Handler<AsyncResult<Void>> resultHandler) {
     JsonArray data = new JsonArray().add(id);
-    dbClient.rxUpdateWithParams(sqlQueries.get(SqlQuery.DELETE_FACE), data)
-      .toCompletable()
-      .subscribe(CompletableHelper.toObserver(resultHandler));
+    dbClient.rxUpdateWithParams(sqlQueries.get(SqlQuery.DELETE_FACE), data).toCompletable()
+        .subscribe(CompletableHelper.toObserver(resultHandler));
     return this;
   }
 
   @Override
-  public DatabaseService fetchAllFacesData(Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-    dbClient.rxQuery(sqlQueries.get(SqlQuery.ALL_FACES_DATA))
-      .map(ResultSet::getRows)
-      .subscribe(SingleHelper.toObserver(resultHandler));
+  public DatabaseService deleteAllFaces(Handler<AsyncResult<Void>> resultHandler) {
+    dbClient.rxQuery(sqlQueries.get(SqlQuery.DELETE_ALL_FACES)).toCompletable()
+        .subscribe(CompletableHelper.toObserver(resultHandler));
     return this;
+  }
+
+  // FIB queries
+
+  @Override
+  public DatabaseService fetchAllFib(Handler<AsyncResult<JsonArray>> resultHandler) {
+    return null;
+  }
+
+  @Override
+  public DatabaseService fetchFibEntry(String name, Handler<AsyncResult<JsonObject>> resultHandler) {
+    return null;
+  }
+
+  @Override
+  public DatabaseService fetchFibEntryById(int id, Handler<AsyncResult<JsonObject>> resultHandler) {
+    return null;
+  }
+
+  @Override
+  public DatabaseService createFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler) {
+    return null;
+  }
+
+  @Override
+  public DatabaseService saveFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler) {
+    return null;
+  }
+
+  @Override
+  public DatabaseService deleteFibEntry(String prefix, Handler<AsyncResult<Void>> resultHandler) {
+    return null;
+  }
+
+  @Override
+  public DatabaseService fetchAllFibEntries(Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    return null;
   }
 }

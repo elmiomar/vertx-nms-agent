@@ -61,17 +61,13 @@ public class HttpServerVerticle extends AbstractVerticle {
     allowedMethods.add(HttpMethod.GET);
     allowedMethods.add(HttpMethod.POST);
     allowedMethods.add(HttpMethod.OPTIONS);
-    /*
-     * these methods aren't necessary for this sample, but you may need them for
-     * your projects
-     */
     allowedMethods.add(HttpMethod.DELETE);
     allowedMethods.add(HttpMethod.PATCH);
     allowedMethods.add(HttpMethod.PUT);
 
-    for (HttpMethod method : allowedMethods) {
-      router.route().handler(CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethod(method));
-    }
+    CorsHandler corsHandler = CorsHandler.create("*").allowedHeaders(allowedHeaders);
+    Arrays.asList(HttpMethod.values()).stream().forEach(method -> corsHandler.allowedMethod(method));
+    router.route().handler(corsHandler);
 
     router.get("/access-control-with-get").handler(ctx -> {
       HttpServerResponse httpServerResponse = ctx.response();
@@ -120,13 +116,24 @@ public class HttpServerVerticle extends AbstractVerticle {
     router.get("/app/*").handler(StaticHandler.create().setCachingEnabled(false));
     router.get("/").handler(context -> context.reroute("/app/index.html"));
 
+    // faces api
     router.get("/api/faces").handler(this::apiGetAllFaces);
-    router.get("/api/faces/:faceId").handler(this::apiGetFace);
+    router.get("/api/faces/:id").handler(this::apiGetFace);
     router.post().handler(BodyHandler.create());
     router.post("/api/faces").handler(this::apiCreateFace);
     router.put().handler(BodyHandler.create());
     router.put("/api/faces/:faceId").handler(this::apiUpdateFace);
     router.delete("/api/faces/:faceId").handler(this::apiDeleteFace);
+    router.delete("/api/faces").handler(this::apiDeleteAllFaces);
+
+    // fib api
+    router.get("/api/fib").handler(this::apiGetAllFib);
+    router.get("/api/fib/:entryId").handler(this::apiGetFibEntry);
+    router.post().handler(BodyHandler.create());
+    router.post("/api/fib").handler(this::apiCreateFibEntry);
+    router.put().handler(BodyHandler.create());
+    router.put("/api/fib/:entryId").handler(this::apiUpdateFibEntry);
+    router.delete("/api/fib/:entryId").handler(this::apiDeleteFibEntry);
 
     int portNumber = config().getInteger(CONFIG_HTTP_SERVER_PORT, 8080);
     server.requestHandler(router).rxListen(portNumber).subscribe(s -> {
@@ -139,6 +146,7 @@ public class HttpServerVerticle extends AbstractVerticle {
   }
 
   private void apiCreateFace(RoutingContext context) {
+    LOGGER.info("[API] Create Face");
     JsonObject face = context.getBodyAsJson();
     if (!validateJsonFaceDocument(context, face, "remoteUri", "localUri")) {
       return;
@@ -150,12 +158,23 @@ public class HttpServerVerticle extends AbstractVerticle {
             t -> apiFailure(context, t));
   }
 
+  private void apiGetAllFaces(RoutingContext context) {
+    LOGGER.debug("[API] Get all faces, request url: " + context.request().absoluteURI());
+    dbService.rxFetchAllFaces().flatMapPublisher(Flowable::fromIterable)
+        .map(obj -> new JsonObject().put("faceId", obj.getInteger("ID")).put("remoteUri", obj.getString("REMOTE"))
+            .put("localUri", obj.getString("LOCAL")))
+        .collect(JsonArray::new, JsonArray::add)
+        .subscribe(faces -> apiResponse(context, 200, "faces", faces), t -> apiFailure(context, t));
+  }
+
   private void apiGetFace(RoutingContext context) {
-    int id = Integer.valueOf(context.request().getParam("faceId"));
+    LOGGER.debug("[API] Get Face, request url: " + context.request().getParam("id"));
+    int id = Integer.valueOf(context.request().getParam("id"));
     dbService.rxFetchFaceById(id).subscribe(dbObject -> {
       if (dbObject.getBoolean("found")) {
-        JsonObject payload = new JsonObject().put("faceId", dbObject.getInteger("faceId"))
-            .put("remoteUri", dbObject.getString("remoteUri")).put("localUri", dbObject.getString("localUri"));
+        LOGGER.debug("[API] Get Face =" + context.request().getParam("id"));
+        JsonObject payload = new JsonObject().put("id", dbObject.getInteger("id"))
+            .put("remoteUri", dbObject.getString("remote")).put("localUri", dbObject.getString("local"));
         apiResponse(context, 200, "face", payload);
       } else {
         apiFailure(context, 404, "There is no face with ID " + id);
@@ -164,8 +183,12 @@ public class HttpServerVerticle extends AbstractVerticle {
   }
 
   private void apiDeleteFace(RoutingContext context) {
-    int id = Integer.valueOf(context.request().getParam("id"));
+    int id = Integer.valueOf(context.request().getParam("faceId"));
     dbService.rxDeleteFace(id).subscribe(() -> apiResponse(context, 200, null, null), t -> apiFailure(context, t));
+  }
+
+  private void apiDeleteAllFaces(RoutingContext context) {
+    dbService.rxDeleteAllFaces().subscribe(() -> apiResponse(context, 200, null, null), t -> apiFailure(context, t));
   }
 
   private void apiUpdateFace(RoutingContext context) {
@@ -195,12 +218,69 @@ public class HttpServerVerticle extends AbstractVerticle {
     return true;
   }
 
-  private void apiGetAllFaces(RoutingContext context) {
-    dbService.rxFetchAllFacesData().flatMapPublisher(Flowable::fromIterable)
-        .map(obj -> new JsonObject().put("faceId", obj.getInteger("ID")).put("remoteUri", obj.getString("REMOTE"))
-            .put("localUri", obj.getString("LOCAL")))
-        .collect(JsonArray::new, JsonArray::add)
-        .subscribe(faces -> apiResponse(context, 200, "faces", faces), t -> apiFailure(context, t));
+  // fib related methods
+
+  private void apiCreateFibEntry(RoutingContext context) {
+    JsonObject entry = context.getBodyAsJson();
+    if (!validateJsonFibEntryDocument(context, entry, "entryId", "prefix", "faceId", "cost")) {
+      return;
+    }
+    // dbService.rxCreateFibEntry(entry.getInteger("entryd"),
+    // entry.getString("prefix"), entry.getString("faceId"),
+    // entry.getString("cost"))
+    // .subscribe(
+    // () -> apiResponse(context, 201, "message",
+    // "face with id=" + face.getInteger("faceId") + " was created succesfully!"),
+    // t -> apiFailure(context, t));
+  }
+
+  private void apiGetFibEntry(RoutingContext context) {
+    int id = Integer.valueOf(context.request().getParam("faceId"));
+    dbService.rxFetchFaceById(id).subscribe(dbObject -> {
+      if (dbObject.getBoolean("found")) {
+        JsonObject payload = new JsonObject().put("faceId", dbObject.getInteger("faceId"))
+            .put("remoteUri", dbObject.getString("remoteUri")).put("localUri", dbObject.getString("localUri"));
+        apiResponse(context, 200, "face", payload);
+      } else {
+        apiFailure(context, 404, "There is no face with ID " + id);
+      }
+    }, t -> apiFailure(context, t));
+  }
+
+  private void apiDeleteFibEntry(RoutingContext context) {
+    int id = Integer.valueOf(context.request().getParam("id"));
+    dbService.rxDeleteFace(id).subscribe(() -> apiResponse(context, 200, null, null), t -> apiFailure(context, t));
+  }
+
+  private void apiUpdateFibEntry(RoutingContext context) {
+    int id = Integer.valueOf(context.request().getParam("faceId"));
+    JsonObject face = context.getBodyAsJson();
+    if (!validateJsonFaceDocument(context, face, "remoteUri", "localUri")) {
+      return;
+    }
+    // publish-on-page-updated
+    dbService.rxSaveFace(id, face.getString("remoteUri"), face.getString("localUri")).doOnComplete(() -> {
+      JsonObject event = new JsonObject().put("id", id).put("remoteUri", face.getString("remoteUri")).put("localUri",
+          face.getString("localUri"));
+      vertx.eventBus().publish("page.saved", event);
+    }).subscribe(() -> apiResponse(context, 200, null, null), t -> apiFailure(context, t));
+    // publish-on-page-updated
+  }
+
+  private boolean validateJsonFibEntryDocument(RoutingContext context, JsonObject face, String... expectedKeys) {
+    if (!Arrays.stream(expectedKeys).allMatch(face::containsKey)) {
+      LOGGER.error(
+          "Bad face creation JSON payload: " + face.encodePrettily() + " from " + context.request().remoteAddress());
+      context.response().setStatusCode(400);
+      context.response().putHeader("Content-Type", "application/json");
+      context.response().end(new JsonObject().put("success", false).put("error", "Bad request payload").encode());
+      return false;
+    }
+    return true;
+  }
+
+  private void apiGetAllFib(RoutingContext context) {
+
   }
 
   private void apiResponse(RoutingContext context, int statusCode, String jsonField, Object jsonData) {
