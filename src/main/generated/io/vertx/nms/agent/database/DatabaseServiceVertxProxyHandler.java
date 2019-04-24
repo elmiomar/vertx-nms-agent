@@ -41,7 +41,6 @@ import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.HelperUtils;
 
-import io.vertx.core.json.JsonArray;
 import java.util.List;
 import io.vertx.nms.agent.database.DatabaseService;
 import io.vertx.core.json.JsonObject;
@@ -149,8 +148,8 @@ public class DatabaseServiceVertxProxyHandler extends ProxyHandler {
           service.deleteAllFaces(HelperUtils.createHandler(msg));
           break;
         }
-        case "fetchAllFib": {
-          service.fetchAllFib(HelperUtils.createHandler(msg));
+        case "fetchAllFibEntries": {
+          service.fetchAllFibEntries(HelperUtils.createListHandler(msg));
           break;
         }
         case "fetchFibEntry": {
@@ -165,25 +164,44 @@ public class DatabaseServiceVertxProxyHandler extends ProxyHandler {
         }
         case "createFibEntry": {
           service.createFibEntry((java.lang.String)json.getValue("prefix"),
-                        json.getValue("id") == null ? null : (json.getLong("id").intValue()),
+                        json.getValue("faceId") == null ? null : (json.getLong("faceId").intValue()),
                         json.getValue("cost") == null ? null : (json.getLong("cost").intValue()),
                         HelperUtils.createHandler(msg));
           break;
         }
         case "saveFibEntry": {
           service.saveFibEntry((java.lang.String)json.getValue("prefix"),
-                        json.getValue("id") == null ? null : (json.getLong("id").intValue()),
+                        json.getValue("faceId") == null ? null : (json.getLong("faceId").intValue()),
                         json.getValue("cost") == null ? null : (json.getLong("cost").intValue()),
+                        (java.lang.String)json.getValue("id"),
                         HelperUtils.createHandler(msg));
           break;
         }
         case "deleteFibEntry": {
-          service.deleteFibEntry((java.lang.String)json.getValue("prefix"),
+          service.deleteFibEntry(json.getValue("entryId") == null ? null : (json.getLong("entryId").intValue()),
                         HelperUtils.createHandler(msg));
           break;
         }
-        case "fetchAllFibEntries": {
-          service.fetchAllFibEntries(HelperUtils.createListHandler(msg));
+        case "fetchAllLogs": {
+          service.fetchAllLogs(HelperUtils.createListHandler(msg));
+          break;
+        }
+        case "fetchLogById": {
+          service.fetchLogById(json.getValue("logId") == null ? null : (json.getLong("logId").intValue()),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "createLog": {
+          service.createLog((java.lang.String)json.getValue("timestamp"),
+                        (java.lang.String)json.getValue("verticle"),
+                        (java.lang.String)json.getValue("level"),
+                        (java.lang.String)json.getValue("message"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "deleteLog": {
+          service.deleteLog(json.getValue("logId") == null ? null : (json.getLong("logId").intValue()),
+                        HelperUtils.createHandler(msg));
           break;
         }
         default: throw new IllegalStateException("Invalid action: " + action);

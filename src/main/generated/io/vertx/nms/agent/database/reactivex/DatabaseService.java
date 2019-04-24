@@ -22,7 +22,6 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.vertx.core.json.JsonArray;
 import java.util.List;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
@@ -130,14 +129,14 @@ public class DatabaseService {
     });
   }
 
-  public io.vertx.nms.agent.database.reactivex.DatabaseService fetchAllFib(Handler<AsyncResult<JsonArray>> resultHandler) { 
-    delegate.fetchAllFib(resultHandler);
+  public io.vertx.nms.agent.database.reactivex.DatabaseService fetchAllFibEntries(Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
+    delegate.fetchAllFibEntries(resultHandler);
     return this;
   }
 
-  public Single<JsonArray> rxFetchAllFib() { 
+  public Single<List<JsonObject>> rxFetchAllFibEntries() { 
     return io.vertx.reactivex.impl.AsyncResultSingle.toSingle(handler -> {
-      fetchAllFib(handler);
+      fetchAllFibEntries(handler);
     });
   }
 
@@ -163,47 +162,80 @@ public class DatabaseService {
     });
   }
 
-  public io.vertx.nms.agent.database.reactivex.DatabaseService createFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler) { 
-    delegate.createFibEntry(prefix, id, cost, resultHandler);
+  public io.vertx.nms.agent.database.reactivex.DatabaseService createFibEntry(String prefix, int faceId, int cost, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.createFibEntry(prefix, faceId, cost, resultHandler);
     return this;
   }
 
-  public Completable rxCreateFibEntry(String prefix, int id, int cost) { 
+  public Completable rxCreateFibEntry(String prefix, int faceId, int cost) { 
     return io.vertx.reactivex.impl.AsyncResultCompletable.toCompletable(handler -> {
-      createFibEntry(prefix, id, cost, handler);
+      createFibEntry(prefix, faceId, cost, handler);
     });
   }
 
-  public io.vertx.nms.agent.database.reactivex.DatabaseService saveFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler) { 
-    delegate.saveFibEntry(prefix, id, cost, resultHandler);
+  public io.vertx.nms.agent.database.reactivex.DatabaseService saveFibEntry(String prefix, int faceId, int cost, String id, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.saveFibEntry(prefix, faceId, cost, id, resultHandler);
     return this;
   }
 
-  public Completable rxSaveFibEntry(String prefix, int id, int cost) { 
+  public Completable rxSaveFibEntry(String prefix, int faceId, int cost, String id) { 
     return io.vertx.reactivex.impl.AsyncResultCompletable.toCompletable(handler -> {
-      saveFibEntry(prefix, id, cost, handler);
+      saveFibEntry(prefix, faceId, cost, id, handler);
     });
   }
 
-  public io.vertx.nms.agent.database.reactivex.DatabaseService deleteFibEntry(String prefix, Handler<AsyncResult<Void>> resultHandler) { 
-    delegate.deleteFibEntry(prefix, resultHandler);
+  public io.vertx.nms.agent.database.reactivex.DatabaseService deleteFibEntry(int entryId, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.deleteFibEntry(entryId, resultHandler);
     return this;
   }
 
-  public Completable rxDeleteFibEntry(String prefix) { 
+  public Completable rxDeleteFibEntry(int entryId) { 
     return io.vertx.reactivex.impl.AsyncResultCompletable.toCompletable(handler -> {
-      deleteFibEntry(prefix, handler);
+      deleteFibEntry(entryId, handler);
     });
   }
 
-  public io.vertx.nms.agent.database.reactivex.DatabaseService fetchAllFibEntries(Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
-    delegate.fetchAllFibEntries(resultHandler);
+  public io.vertx.nms.agent.database.reactivex.DatabaseService fetchAllLogs(Handler<AsyncResult<List<JsonObject>>> resultHandler) { 
+    delegate.fetchAllLogs(resultHandler);
     return this;
   }
 
-  public Single<List<JsonObject>> rxFetchAllFibEntries() { 
+  public Single<List<JsonObject>> rxFetchAllLogs() { 
     return io.vertx.reactivex.impl.AsyncResultSingle.toSingle(handler -> {
-      fetchAllFibEntries(handler);
+      fetchAllLogs(handler);
+    });
+  }
+
+  public io.vertx.nms.agent.database.reactivex.DatabaseService fetchLogById(int logId, Handler<AsyncResult<JsonObject>> resultHandler) { 
+    delegate.fetchLogById(logId, resultHandler);
+    return this;
+  }
+
+  public Single<JsonObject> rxFetchLogById(int logId) { 
+    return io.vertx.reactivex.impl.AsyncResultSingle.toSingle(handler -> {
+      fetchLogById(logId, handler);
+    });
+  }
+
+  public io.vertx.nms.agent.database.reactivex.DatabaseService createLog(String timestamp, String verticle, String level, String message, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.createLog(timestamp, verticle, level, message, resultHandler);
+    return this;
+  }
+
+  public Completable rxCreateLog(String timestamp, String verticle, String level, String message) { 
+    return io.vertx.reactivex.impl.AsyncResultCompletable.toCompletable(handler -> {
+      createLog(timestamp, verticle, level, message, handler);
+    });
+  }
+
+  public io.vertx.nms.agent.database.reactivex.DatabaseService deleteLog(int logId, Handler<AsyncResult<Void>> resultHandler) { 
+    delegate.deleteLog(logId, resultHandler);
+    return this;
+  }
+
+  public Completable rxDeleteLog(int logId) { 
+    return io.vertx.reactivex.impl.AsyncResultCompletable.toCompletable(handler -> {
+      deleteLog(logId, handler);
     });
   }
 

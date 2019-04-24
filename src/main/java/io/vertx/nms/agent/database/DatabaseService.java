@@ -52,7 +52,7 @@ public interface DatabaseService {
   // FIB queries
 
   @Fluent
-  DatabaseService fetchAllFib(Handler<AsyncResult<JsonArray>> resultHandler);
+  DatabaseService fetchAllFibEntries(Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
   @Fluent
   DatabaseService fetchFibEntry(String name, Handler<AsyncResult<JsonObject>> resultHandler);
@@ -61,14 +61,28 @@ public interface DatabaseService {
   DatabaseService fetchFibEntryById(int id, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Fluent
-  DatabaseService createFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler);
+  DatabaseService createFibEntry(String prefix, int faceId, int cost, Handler<AsyncResult<Void>> resultHandler);
 
   @Fluent
-  DatabaseService saveFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler);
+  DatabaseService saveFibEntry(String prefix, int faceId, int cost, String id, Handler<AsyncResult<Void>> resultHandler);
 
   @Fluent
-  DatabaseService deleteFibEntry(String prefix, Handler<AsyncResult<Void>> resultHandler);
+  DatabaseService deleteFibEntry(int entryId, Handler<AsyncResult<Void>> resultHandler);
+
+
+  // LOG queries
 
   @Fluent
-  DatabaseService fetchAllFibEntries(Handler<AsyncResult<List<JsonObject>>> resultHandler);
+  DatabaseService fetchAllLogs(Handler<AsyncResult<List<JsonObject>>> resultHandler);
+
+  @Fluent
+  DatabaseService fetchLogById(int logId, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  @Fluent
+  DatabaseService createLog(String timestamp, String verticle, String level, String message, Handler<AsyncResult<Void>> resultHandler);
+
+  @Fluent
+  DatabaseService deleteLog(int logId, Handler<AsyncResult<Void>> resultHandler);
+
+
 }

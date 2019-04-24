@@ -34,6 +34,7 @@ public class HttpServerVerticle extends AbstractVerticle {
 
   public static final String CONFIG_HTTP_SERVER_PORT = "http.server.port";
   public static final String CONFIG_WIKIDB_QUEUE = "db.queue";
+  public static final String VERTICLE_NAME = HttpServerVerticle.class.getName();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
 
@@ -65,7 +66,8 @@ public class HttpServerVerticle extends AbstractVerticle {
     allowedMethods.add(HttpMethod.PATCH);
     allowedMethods.add(HttpMethod.PUT);
 
-    CorsHandler corsHandler = CorsHandler.create("*").allowedHeaders(allowedHeaders);
+    CorsHandler corsHandler = CorsHandler.create("http://localhost:8000").allowedHeaders(allowedHeaders)
+        .allowCredentials(true);
     Arrays.asList(HttpMethod.values()).stream().forEach(method -> corsHandler.allowedMethod(method));
     router.route().handler(corsHandler);
 
@@ -101,8 +103,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
     BridgeOptions bridgeOptions = new BridgeOptions()
         .addInboundPermitted(new PermittedOptions().setAddress("nms.web.monitor"))
-        .addOutboundPermitted(new PermittedOptions().setAddress("nms.web.monitor"))
-        .addOutboundPermitted(new PermittedOptions().setAddress("page.saved"));
+        .addOutboundPermitted(new PermittedOptions().setAddress("nms.web.monitor"));
     sockJSHandler.bridge(bridgeOptions);
     router.route("/eventbus/*").handler(sockJSHandler);
     // sockjs-handler-setup
@@ -129,11 +130,15 @@ public class HttpServerVerticle extends AbstractVerticle {
     // fib api
     router.get("/api/fib").handler(this::apiGetAllFib);
     router.get("/api/fib/:entryId").handler(this::apiGetFibEntry);
-    router.post().handler(BodyHandler.create());
     router.post("/api/fib").handler(this::apiCreateFibEntry);
-    router.put().handler(BodyHandler.create());
     router.put("/api/fib/:entryId").handler(this::apiUpdateFibEntry);
     router.delete("/api/fib/:entryId").handler(this::apiDeleteFibEntry);
+
+    // logs api
+    router.get("/api/logs").handler(this::apiGetAllLogs);
+    router.get("/api/logs/:logId").handler(this::apiGetLogById);
+    router.post("/api/logs").handler(this::apiCreateLog);
+    router.delete("/api/logs/:logId").handler(this::apiDeleteLog);
 
     int portNumber = config().getInteger(CONFIG_HTTP_SERVER_PORT, 8080);
     server.requestHandler(router).rxListen(portNumber).subscribe(s -> {
@@ -221,35 +226,38 @@ public class HttpServerVerticle extends AbstractVerticle {
   // fib related methods
 
   private void apiCreateFibEntry(RoutingContext context) {
+
     JsonObject entry = context.getBodyAsJson();
-    if (!validateJsonFibEntryDocument(context, entry, "entryId", "prefix", "faceId", "cost")) {
+    LOGGER.debug("[API] Create Fib Entry: " + entry);
+    if (!validateJsonFibEntryDocument(context, entry, "prefix", "faceId", "cost")) {
       return;
     }
-    // dbService.rxCreateFibEntry(entry.getInteger("entryd"),
-    // entry.getString("prefix"), entry.getString("faceId"),
-    // entry.getString("cost"))
-    // .subscribe(
-    // () -> apiResponse(context, 201, "message",
-    // "face with id=" + face.getInteger("faceId") + " was created succesfully!"),
-    // t -> apiFailure(context, t));
+    dbService.rxCreateFibEntry(entry.getString("prefix"), entry.getInteger("faceId"), entry.getInteger("cost"))
+        .subscribe(
+            () -> apiResponse(context, 201, "message",
+                "fib entry for prefix " + entry.getString("prefix") + " was created succesfully!"),
+            t -> apiFailure(context, t));
   }
 
   private void apiGetFibEntry(RoutingContext context) {
-    int id = Integer.valueOf(context.request().getParam("faceId"));
-    dbService.rxFetchFaceById(id).subscribe(dbObject -> {
+    int id = Integer.valueOf(context.request().getParam("entryId"));
+    LOGGER.debug("[API] Get one fib entry: " + id);
+    dbService.rxFetchFibEntryById(id).subscribe(dbObject -> {
       if (dbObject.getBoolean("found")) {
-        JsonObject payload = new JsonObject().put("faceId", dbObject.getInteger("faceId"))
-            .put("remoteUri", dbObject.getString("remoteUri")).put("localUri", dbObject.getString("localUri"));
-        apiResponse(context, 200, "face", payload);
+        JsonObject payload = new JsonObject().put("entryId", dbObject.getInteger("id"))
+            .put("prefix", dbObject.getString("prefix")).put("face", dbObject.getInteger("face"))
+            .put("cost", dbObject.getInteger("cost"));
+        apiResponse(context, 200, "entry", payload);
       } else {
-        apiFailure(context, 404, "There is no face with ID " + id);
+        apiFailure(context, 404, "There is no fib entry with ID " + id);
       }
     }, t -> apiFailure(context, t));
   }
 
   private void apiDeleteFibEntry(RoutingContext context) {
-    int id = Integer.valueOf(context.request().getParam("id"));
-    dbService.rxDeleteFace(id).subscribe(() -> apiResponse(context, 200, null, null), t -> apiFailure(context, t));
+    int id = Integer.valueOf(context.request().getParam("entryId"));
+    dbService.rxDeleteFibEntry(id).subscribe(
+        () -> apiResponse(context, 200, "message", "fib entry was deleted succesfully!"), t -> apiFailure(context, t));
   }
 
   private void apiUpdateFibEntry(RoutingContext context) {
@@ -267,10 +275,10 @@ public class HttpServerVerticle extends AbstractVerticle {
     // publish-on-page-updated
   }
 
-  private boolean validateJsonFibEntryDocument(RoutingContext context, JsonObject face, String... expectedKeys) {
-    if (!Arrays.stream(expectedKeys).allMatch(face::containsKey)) {
+  private boolean validateJsonFibEntryDocument(RoutingContext context, JsonObject entry, String... expectedKeys) {
+    if (!Arrays.stream(expectedKeys).allMatch(entry::containsKey)) {
       LOGGER.error(
-          "Bad face creation JSON payload: " + face.encodePrettily() + " from " + context.request().remoteAddress());
+          "Bad fib creation JSON payload: " + entry.encodePrettily() + " from " + context.request().remoteAddress());
       context.response().setStatusCode(400);
       context.response().putHeader("Content-Type", "application/json");
       context.response().end(new JsonObject().put("success", false).put("error", "Bad request payload").encode());
@@ -280,7 +288,58 @@ public class HttpServerVerticle extends AbstractVerticle {
   }
 
   private void apiGetAllFib(RoutingContext context) {
+    LOGGER.debug("[API] Get all fib entries, request url: " + context.request().absoluteURI());
+    dbService.rxFetchAllFibEntries().flatMapPublisher(Flowable::fromIterable)
+        .map(obj -> new JsonObject().put("id", obj.getInteger("ID")).put("prefix", obj.getString("PREFIX"))
+            .put("faceId", obj.getInteger("FACE")).put("cost", obj.getInteger("COST")))
+        .collect(JsonArray::new, JsonArray::add)
+        .subscribe(fib -> apiResponse(context, 200, "fib", fib), t -> apiFailure(context, t));
+  }
 
+  // Logs api functions
+
+  private void apiGetAllLogs(RoutingContext context) {
+    LOGGER.debug("[API] Get all logs, request url: " + context.request().absoluteURI());
+    dbService.rxFetchAllLogs().flatMapPublisher(Flowable::fromIterable)
+        .map(obj -> new JsonObject().put("id", obj.getInteger("ID")).put("timestamp", obj.getString("TIMESTAMP"))
+            .put("verticle", obj.getInteger("VERTICLE")).put("level", obj.getInteger("LEVEL"))
+            .put("message", obj.getInteger("MESSAGE")))
+        .collect(JsonArray::new, JsonArray::add)
+        .subscribe(fib -> apiResponse(context, 200, "fib", fib), t -> apiFailure(context, t));
+  }
+
+  private void apiGetLogById(RoutingContext context) {
+    int id = Integer.valueOf(context.request().getParam("logId"));
+    LOGGER.debug("[API] Get one log entry: " + id);
+    dbService.rxFetchLogById(id).subscribe(dbObject -> {
+      if (dbObject.getBoolean("found")) {
+        JsonObject payload = new JsonObject().put("logId", dbObject.getInteger("id"))
+            .put("timestamp", dbObject.getString("timestamp")).put("verticle", dbObject.getString("verticle"))
+            .put("level", dbObject.getString("level")).put("message", dbObject.getString("message"));
+        apiResponse(context, 200, "log", payload);
+      } else {
+        apiFailure(context, 404, "There is no log entry with ID " + id);
+      }
+    }, t -> apiFailure(context, t));
+  }
+
+  private void apiCreateLog(RoutingContext context) {
+    LOGGER.info("[API] Create log");
+    JsonObject log = context.getBodyAsJson();
+    if (!validateJsonFaceDocument(context, log, "timestamp", "verticle", "level", "message")) {
+      return;
+    }
+    dbService.rxCreateLog(log.getString("timestamp"), log.getString("verticle"), log.getString("level"), log.getString("message"))
+        .subscribe(
+            () -> apiResponse(context, 201, "message",
+                "log recorded was created succesfully!"),
+            t -> apiFailure(context, t));
+  }
+
+  private void apiDeleteLog(RoutingContext context) {
+    int id = Integer.valueOf(context.request().getParam("logId"));
+    dbService.rxDeleteLog(id).subscribe(
+        () -> apiResponse(context, 200, "message", "log record was deleted succesfully!"), t -> apiFailure(context, t));
   }
 
   private void apiResponse(RoutingContext context, int statusCode, String jsonField, Object jsonData) {

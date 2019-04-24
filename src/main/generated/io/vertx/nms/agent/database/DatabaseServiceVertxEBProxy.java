@@ -33,7 +33,6 @@ import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.ProxyUtils;
 
-import io.vertx.core.json.JsonArray;
 import java.util.List;
 import io.vertx.nms.agent.database.DatabaseService;
 import io.vertx.core.json.JsonObject;
@@ -187,7 +186,7 @@ public class DatabaseServiceVertxEBProxy implements DatabaseService {
     return this;
   }
   @Override
-  public  DatabaseService fetchAllFib(Handler<AsyncResult<JsonArray>> resultHandler){
+  public  DatabaseService fetchAllFibEntries(Handler<AsyncResult<List<JsonObject>>> resultHandler){
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return this;
@@ -195,12 +194,12 @@ public class DatabaseServiceVertxEBProxy implements DatabaseService {
     JsonObject _json = new JsonObject();
 
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
-    _deliveryOptions.addHeader("action", "fetchAllFib");
+    _deliveryOptions.addHeader("action", "fetchAllFibEntries");
     _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
-        resultHandler.handle(Future.succeededFuture(res.result().body()));
+        resultHandler.handle(Future.succeededFuture(ProxyUtils.convertList(res.result().body().getList())));
       }
     });
     return this;
@@ -246,14 +245,14 @@ public class DatabaseServiceVertxEBProxy implements DatabaseService {
     return this;
   }
   @Override
-  public  DatabaseService createFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler){
+  public  DatabaseService createFibEntry(String prefix, int faceId, int cost, Handler<AsyncResult<Void>> resultHandler){
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("prefix", prefix);
-    _json.put("id", id);
+    _json.put("faceId", faceId);
     _json.put("cost", cost);
 
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
@@ -268,15 +267,16 @@ public class DatabaseServiceVertxEBProxy implements DatabaseService {
     return this;
   }
   @Override
-  public  DatabaseService saveFibEntry(String prefix, int id, int cost, Handler<AsyncResult<Void>> resultHandler){
+  public  DatabaseService saveFibEntry(String prefix, int faceId, int cost, String id, Handler<AsyncResult<Void>> resultHandler){
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("prefix", prefix);
-    _json.put("id", id);
+    _json.put("faceId", faceId);
     _json.put("cost", cost);
+    _json.put("id", id);
 
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "saveFibEntry");
@@ -290,13 +290,13 @@ public class DatabaseServiceVertxEBProxy implements DatabaseService {
     return this;
   }
   @Override
-  public  DatabaseService deleteFibEntry(String prefix, Handler<AsyncResult<Void>> resultHandler){
+  public  DatabaseService deleteFibEntry(int entryId, Handler<AsyncResult<Void>> resultHandler){
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return this;
     }
     JsonObject _json = new JsonObject();
-    _json.put("prefix", prefix);
+    _json.put("entryId", entryId);
 
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "deleteFibEntry");
@@ -310,7 +310,7 @@ public class DatabaseServiceVertxEBProxy implements DatabaseService {
     return this;
   }
   @Override
-  public  DatabaseService fetchAllFibEntries(Handler<AsyncResult<List<JsonObject>>> resultHandler){
+  public  DatabaseService fetchAllLogs(Handler<AsyncResult<List<JsonObject>>> resultHandler){
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return this;
@@ -318,12 +318,75 @@ public class DatabaseServiceVertxEBProxy implements DatabaseService {
     JsonObject _json = new JsonObject();
 
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
-    _deliveryOptions.addHeader("action", "fetchAllFibEntries");
+    _deliveryOptions.addHeader("action", "fetchAllLogs");
     _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
         resultHandler.handle(Future.succeededFuture(ProxyUtils.convertList(res.result().body().getList())));
+      }
+    });
+    return this;
+  }
+  @Override
+  public  DatabaseService fetchLogById(int logId, Handler<AsyncResult<JsonObject>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return this;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("logId", logId);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "fetchLogById");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+    return this;
+  }
+  @Override
+  public  DatabaseService createLog(String timestamp, String verticle, String level, String message, Handler<AsyncResult<Void>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return this;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("timestamp", timestamp);
+    _json.put("verticle", verticle);
+    _json.put("level", level);
+    _json.put("message", message);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "createLog");
+    _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+    return this;
+  }
+  @Override
+  public  DatabaseService deleteLog(int logId, Handler<AsyncResult<Void>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return this;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("logId", logId);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "deleteLog");
+    _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
     return this;

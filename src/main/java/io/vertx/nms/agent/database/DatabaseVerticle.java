@@ -70,12 +70,19 @@ public class DatabaseVerticle extends AbstractVerticle {
     sqlQueries.put(SqlQuery.GET_FACE_BY_ID, queriesProps.getProperty("get-face-by-id"));
 
     sqlQueries.put(SqlQuery.CREATE_FIB_TABLE, queriesProps.getProperty("create-fib-table"));
-    sqlQueries.put(SqlQuery.ALL_FIB, queriesProps.getProperty("all-fib"));
-    sqlQueries.put(SqlQuery.GET_FIB_ENTRY, queriesProps.getProperty("get-fib-entry"));
+    sqlQueries.put(SqlQuery.ALL_FIB_ENTRIES, queriesProps.getProperty("all-fib-entries"));
+    sqlQueries.put(SqlQuery.GET_FIB_ENTRY_BY_ID, queriesProps.getProperty("get-fib-entry-by-id"));
     sqlQueries.put(SqlQuery.CREATE_FIB_ENTRY, queriesProps.getProperty("create-fib-entry"));
     sqlQueries.put(SqlQuery.SAVE_FIB_ENTRY, queriesProps.getProperty("save-fib-entry"));
     sqlQueries.put(SqlQuery.DELETE_FIB_ENTRY, queriesProps.getProperty("delete-fib-entry"));
-    sqlQueries.put(SqlQuery.GET_FIB_BY_PREFIX, queriesProps.getProperty("get-fib-by-prefix"));
+    sqlQueries.put(SqlQuery.GET_FIB_BY_PREFIX, queriesProps.getProperty("get-fib-by-name"));
+
+    sqlQueries.put(SqlQuery.CREATE_LOGS_TABLE, queriesProps.getProperty("create-logs-table"));
+    sqlQueries.put(SqlQuery.ALL_LOGS, queriesProps.getProperty("get-logs"));
+    sqlQueries.put(SqlQuery.GET_LOG_BY_ID, queriesProps.getProperty("get-log-by-id"));
+    sqlQueries.put(SqlQuery.CREATE_LOG, queriesProps.getProperty("create-log"));
+    sqlQueries.put(SqlQuery.DELETE_LOG, queriesProps.getProperty("delete-log"));
+
     return sqlQueries;
   }
 }
