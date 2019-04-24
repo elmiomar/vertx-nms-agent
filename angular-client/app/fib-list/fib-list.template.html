@@ -1,0 +1,62 @@
+<div layout="row">
+
+    <div flex="100" class='m-20px-0'>
+
+
+        <!-- page title & 'create face' button -->
+        <md-toolbar class="md-hue-2">
+            <div class="md-toolbar-tools">
+                <!-- page title -->
+                <div flex md-truncate>
+                    <h3 class="md-headline">Forwarding Table</h3>
+                </div>
+
+                <md-button class="md-icon-button" ng-click="showCreateFibEntryForm()">
+                    <md-tooltip md-direction="top">Add a new FIB entry</md-tooltip>
+                    <md-icon aria-label="Create Face" style="color:white;">add</md-icon>
+                </md-button>
+                <md-button class="md-icon-button" ng-show="fib.length > 1"
+                    ng-click="deleteAllFibEntriesAndConfirm($event)">
+                    <md-tooltip md-direction="top">Delete all FIB entries</md-tooltip>
+                    <md-icon aria-label="Delete" style="color:white;">delete</md-icon>
+                </md-button>
+
+            </div>
+        </md-toolbar>
+
+        <!-- 'search' bar will be here -->
+
+        <md-content class="md-padding" flex>
+            <!-- show fib records list -->
+            <md-list>
+                <md-list-item class="md-3-line" ng-repeat="entry in fib">
+
+                    <!-- fib entry information -->
+                    <div class="md-list-item-text">
+                        <h3><strong>Prefix</strong>: {{entry.prefix}}</h3>
+                        <h4><strong>Face ID</strong>: {{entry.faceId}}</h4>
+                        <h4><strong>Cost</strong>: {{entry.cost}}</h4>
+                    </div>
+
+                    <div class="md-secondary-container">
+                        <md-button class="md-icon-button md-info" ng-click="readOneFibEntry(entry.id)">
+                            <md-tooltip md-direction="top">More details</md-tooltip>
+                            <md-icon aria-label="Info" style="color:#D3D3D3;">info</md-icon>
+                        </md-button>
+                        <md-button class="md-icon-button" ng-click="showUpdateFibEntryForm(entry.id)">
+                            <md-tooltip md-direction="top">Edit this FIB entry</md-tooltip>
+                            <md-icon aria-label="Edit" style="color:#D3D3D3;">edit</md-icon>
+                        </md-button>
+                        <md-button class="md-icon-button" ng-click="deleteFibEntryAndConfirm($event, entry.id)">
+                            <md-tooltip md-direction="top">Delete this FIB entry</md-tooltip>
+                            <md-icon aria-label="Delete" style="color:#D3D3D3;">delete</md-icon>
+                        </md-button>
+                    </div>
+                    <md-divider ng-if="!$last"></md-divider>
+                </md-list-item>
+            </md-list>
+
+
+        </md-content>
+    </div>
+</div> <!-- end row -->

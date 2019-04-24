@@ -1,0 +1,1 @@
+angular.module('monitor', ['core.logs']);

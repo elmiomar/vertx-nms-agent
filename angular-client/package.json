@@ -1,0 +1,29 @@
+{
+  "name": "agent-web",
+  "version": "1.0.0",
+  "description": "NMS Agent web interface",
+  "dependencies": {
+    "angular": "1.7.x",
+    "angular-animate": "1.7.x",
+    "angular-material": "^1.1.18",
+    "angular-material-data-table": "^0.10.10",
+    "angular-resource": "^1.7.8",
+    "angular-route": "^1.7.8",
+    "angular-uuid": "0.0.4",
+    "bootstrap": "^4.1.3",
+    "bulma": "^0.7.4",
+    "jquery": "3.3.x"
+  },
+  "scripts": {
+    "start": "http-server ./app -a localhost -p 8000 -c-1",
+    "test": "test"
+  },
+  "keywords": [
+    "nms",
+    "agent",
+    "web",
+    "monito"
+  ],
+  "author": "om@r-ili@s",
+  "license": "ISC"
+}

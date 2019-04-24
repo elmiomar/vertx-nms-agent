@@ -1,0 +1,40 @@
+<div layout="row">
+    <div flex="100" class='m-20px-0'>
+
+        <md-toolbar class="md-hue-2">
+            <div class="md-toolbar-tools">
+                <div flex md-truncate>
+                    <h3 class="md-headline">Event Bus Monitoring</h3>
+                </div>
+
+            </div>
+        </md-toolbar>
+
+        <!-- 'search' bar will be here -->
+
+        <md-content class="md-padding" flex>
+            <div class="container">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Timestamp</th>
+                            <th scope="col">Verticle</th>
+                            <th scope="col">Level</th>
+                            <th scope="col">Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="log in logs">
+                            <td>{{ log.timestamp }}</td>
+                            <td>{{ log.entity }}</td>
+                            <td>{{ log.level }}</td>
+                            <td>{{ log.message }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+        </md-content>
+    </div>
+</div> <!-- end row -->

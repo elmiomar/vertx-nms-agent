@@ -6,3 +6,6 @@ target
 *.class
 .vertx
 db
+
+
+angular-client/node_modules

@@ -1,0 +1,37 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2">
+            <!--Sidebar content-->
+
+            <p>
+                Search:
+                <input ng-model="$ctrl.query" />
+            </p>
+
+            <p>
+                Sort by:
+                <select ng-model="$ctrl.orderProp">
+                    <option value="remoteUri">Alphabetical</option>
+                    <option value="id">Newest</option>
+                </select>
+            </p>
+
+        </div>
+        <div class="col-md-10">
+            <!--Body content-->
+
+            <ul class="faces">
+                <li ng-repeat="face in $ctrl.faces | filter:$ctrl.query | orderBy:$ctrl.orderProp"
+                    class="thumbnail faces-list-item">
+                    <a href="#!/faces/{{face.id}}" class="thumb">
+                        <img ng-src="{{face.imageUrl}}" alt="{{face.name}}" />
+                    </a>
+                    <a href="#!/faces/{{face.id}}">{{face.id}}</a>
+                    <p>{{face.localUri}}</p>
+                    <p>{{face.remoteUri}}</p>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</div>

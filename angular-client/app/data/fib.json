@@ -1,0 +1,25 @@
+[{
+    "prefix": "/gov/nist/antd",
+    "face": 256,
+    "cost": 100
+}, {
+    "prefix": "/gov/nist/el",
+    "face": 268,
+    "cost": 50
+}, {
+    "prefix": "/gov/nist/itl",
+    "face": 340,
+    "cost": 0
+}, {
+    "prefix": "/gov/dod/cps",
+    "face": 322,
+    "cost": 40
+}, {
+    "prefix": "/cali/ucla/cs",
+    "face": 262,
+    "cost": 10
+}, {
+    "prefix": "/edu/umd/cs",
+    "face": 288,
+    "cost": 100
+}]

@@ -1,0 +1,37 @@
+<md-dialog>
+    <form ng-cloak>
+
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Create Face</h2>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+
+                <!-- we are using ng-model to bind this view and the 'product model -->
+                <md-input-container class="md-block">
+                    <label>ID</label>
+                    <input type="number" ng-model="id" required>
+                </md-input-container>
+
+                <md-input-container class="md-block">
+                    <label>Remote URI</label>
+                    <input ng-model="remoteUri" required>
+                </md-input-container>
+
+                <md-input-container class="md-block">
+                    <label>Local URI</label>
+                    <input ng-model="localUri" required>
+                </md-input-container>
+
+            </div>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button ng-click="cancel()">Cancel</md-button>
+            <md-button ng-click="createFace()" class="md-primary">Create</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

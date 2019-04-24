@@ -1,0 +1,59 @@
+<div layout="row">
+
+    <div flex="100" class='m-20px-0'>
+
+
+        <!-- page title & 'create face' button -->
+        <md-toolbar class="md-hue-2">
+            <div class="md-toolbar-tools">
+                <!-- page title -->
+                <div flex md-truncate>
+                    <h3 class="md-headline">Faces</h3>
+                </div>
+
+                <md-button class="md-icon-button" ng-click="showCreateFaceForm()">
+                    <md-icon aria-label="Create Face" style="color:white;">add</md-icon>
+                </md-button>
+                <md-button class="md-icon-button" ng-show="faces.length > 1" ng-click="deleteAllFacesAndConfirm($event)">
+                    <md-icon aria-label="Delete" style="color:white;">delete</md-icon>
+                </md-button>
+
+            </div>
+        </md-toolbar>
+
+        <!-- 'search' bar will be here -->
+
+        <md-content class="md-padding" flex>
+            <!-- show face record list -->
+            <md-list>
+                <md-list-item class="md-3-line" ng-repeat="face in faces">
+
+                    <!-- face information -->
+                    <div class="md-list-item-text">
+                        <h3><strong>ID</strong>: {{face.faceId}}</h3>
+                        <h4><strong>Remote URI</strong>: {{face.remoteUri}}</h4>
+                        <h4><strong>Local URI</strong>: {{face.localUri}}</h4>
+                    </div>
+
+                    <div class="md-secondary-container">
+                        <md-button class="md-icon-button md-info" ng-click="readOneFace(face.faceId)">
+                            <md-icon aria-label="Delete" style="color:#D3D3D3;">info</md-icon>
+                        </md-button>
+                        <md-button class="md-icon-button" ng-click="showUpdateFaceForm(face.faceId)">
+                            <md-icon aria-label="Delete" style="color:#D3D3D3;">edit</md-icon>
+                        </md-button>
+                        <md-button class="md-icon-button" ng-click="deleteFaceAndConfirm($event, face.faceId)">
+                            <md-icon aria-label="Delete" style="color:#D3D3D3;">delete</md-icon>
+                        </md-button>
+                    </div>
+                    <md-divider ng-if="!$last"></md-divider>
+                </md-list-item>
+            </md-list>
+
+
+            <md-button class="md-icon-button" ng-click="">
+                <md-icon aria-label="Create Face" style="color:white;">add</md-icon>
+            </md-button>
+        </md-content>
+    </div>
+</div> <!-- end row -->

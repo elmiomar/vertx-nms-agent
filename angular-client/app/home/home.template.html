@@ -1,0 +1,19 @@
+<div class="container">
+    <div class="tabs is-boxed is-fullwidth">
+        <ul>
+            <li ng-repeat="item in navbarItems" ng-click="select($index)"
+                ng-class="{'is-active': $index===selectedIndex}">
+                <a href="#!{{item.link}}">
+                    <!-- <span class="icon is-small"><i class="{{item.icon}}" aria-hidden="true"></i></span> -->
+                    <span>{{item.label}}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="ext-content">
+        <div class="view-container">
+            <div ng-view class="view-frame"></div>
+        </div>
+    </div>
+
+</div>

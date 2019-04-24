@@ -1,0 +1,38 @@
+<md-dialog>
+        <form ng-cloak>
+    
+            <!-- dialog box title -->
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>Fib Entry Details</h2>
+                </div>
+            </md-toolbar>
+    
+            <md-dialog-content>
+                <div class="md-dialog-content">
+    
+                    <!-- display product information -->
+                    <md-input-container class="md-block">
+                        <label>Prefix</label>
+                        <input type="number" ng-model="prefix" disabled>
+                    </md-input-container>
+    
+                    <md-input-container class="md-block">
+                        <label>Face</label>
+                        <input ng-model="face" disabled>
+                    </md-input-container>
+    
+                    <md-input-container class="md-block">
+                        <label>Cost</label>
+                        <input ng-model="cost" disabled>
+                    </md-input-container>
+    
+                </div>
+            </md-dialog-content>
+    
+            <!-- button to close the dialog box -->
+            <md-dialog-actions layout="row">
+                <md-button ng-click="cancel()">Close</md-button>
+            </md-dialog-actions>
+        </form>
+    </md-dialog>
