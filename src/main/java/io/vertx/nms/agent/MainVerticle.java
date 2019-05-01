@@ -12,7 +12,7 @@ public class MainVerticle extends AbstractVerticle {
 
     Single<String> dbVerticleDeployment = vertx.rxDeployVerticle("io.vertx.nms.agent.database.DatabaseVerticle");
 
-    DeploymentOptions opts = new DeploymentOptions().setInstances(2);
+    DeploymentOptions opts = new DeploymentOptions().setInstances(1);
     dbVerticleDeployment
       .flatMap(id -> vertx.rxDeployVerticle("io.vertx.nms.agent.http.HttpServerVerticle", opts))
       .subscribe(id -> startFuture.complete(), startFuture::fail);

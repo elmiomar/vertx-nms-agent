@@ -1,13 +1,11 @@
 angular.module('monitor').component('monitor', {
     templateUrl: 'monitor/monitor.template.html',
-    controller: ['$scope', '$timeout', '$http', '$mdToast', 'Log', function MonitorController($scope, $timeout, $http, $mdToast, Log) {
+    controller: ['$scope', '$timeout', '$http', '$mdDialog', '$mdToast', 'Log', function MonitorController($scope, $timeout, $http, $mdDialog, $mdToast, Log) {
         $scope.logs = [];
-
-        var eb = new EventBus("http://localhost:8080/eventbus");
 
         $scope.getLogs = function () {
             Log.getLogs().then(function (response) {
-                    $scope.logs = response.data.logs;
+                    $scope.logs = response.data.logs.reverse();
                 },
                 function (response) {
                     if (response.data === null) {
@@ -17,6 +15,27 @@ angular.module('monitor').component('monitor', {
         };
 
         $scope.getLogs();
+
+        var eb = new EventBus("http://localhost:8080/eventbus");
+
+        eb.onopen = function () {
+            console.log('eb.onopen() call');
+            eb.registerHandler("nms.web.monitor", function (error, message) {
+                console.log('eb.registerHandler() call');
+                var log = message.body;
+                console.log(log);
+                $timeout(function () {
+                    $scope.logs.unshift(log);
+                    $scope.createLog(log);
+                });
+
+                // $scope.getLogs();
+            });
+        };
+
+
+
+
 
         $scope.createLog = function (log) {
             Log.createLog(log).then(function successCallback(response) {
@@ -36,19 +55,50 @@ angular.module('monitor').component('monitor', {
             );
         };
 
-        eb.onopen = function () {
-
+        $scope.deleteAllLogs = function () {
+            Log.deleteAllLogs().then(function successCallback(response) {
+                    // tell the user face record was deleted
+                    $scope.showToast("All logs were deleted successfully!");
+                    // refresh the list
+                    $scope.getLogs();
+                },
+                function errorCallback(response) {
+                    $scope.showToast("Unable to delete all logs entries.");
+                });
         };
 
-        eb.registerHandler("nms.web.monitor", function (error, message) {
-            console.log('register handler');
-            var log = message.body;
-            // console.log(obj);
-            // $timeout(function () {
-            //     $scope.logs.unshift(obj);
-            // });
-            $scope.createLog(log);
-            $scope.getLogs();
-        });
+
+        $scope.deleteAllLogsAndConfirm = function (event) {
+            if ($scope.logs.length > 0) {
+                var confirm = $mdDialog.confirm()
+                    .title('Are you sure?')
+                    .textContent('All log entries will be deleted.')
+                    .targetEvent(event)
+                    .ok('Yes')
+                    .cancel('No');
+                // show dialog
+                $mdDialog.show(confirm).then(
+                    // 'Yes' button
+                    function () {
+                        $scope.deleteAllLogs();
+                    },
+                    // 'No' button
+                    function () {
+                        // hide dialog
+                    }
+                );
+            } else {
+                var alert = $mdDialog.alert()
+                    .title('Empty list')
+                    .textContent('There are no registred log entries to delete.')
+                    .targetEvent(event)
+                    .ok('Close');
+                // show dialog
+                $mdDialog.show(alert).finally(function () {
+                    alert = undefined;
+                });
+            }
+        };
+
     }]
 });

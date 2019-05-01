@@ -1,7 +1,6 @@
 
 package io.vertx.nms.agent.database;
 
-import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -24,6 +23,7 @@ class DatabaseServiceImpl implements DatabaseService {
 
   private final HashMap<SqlQuery, String> sqlQueries;
   private final JDBCClient dbClient;
+
 
   DatabaseServiceImpl(io.vertx.ext.jdbc.JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries,
       Handler<AsyncResult<DatabaseService>> readyHandler) {
@@ -190,6 +190,13 @@ class DatabaseServiceImpl implements DatabaseService {
   public DatabaseService deleteLog(int logId, Handler<AsyncResult<Void>> resultHandler) {
     JsonArray data = new JsonArray().add(logId);
     dbClient.rxUpdateWithParams(sqlQueries.get(SqlQuery.DELETE_LOG), data).toCompletable()
+        .subscribe(CompletableHelper.toObserver(resultHandler));
+    return this;
+  }
+
+  @Override
+  public DatabaseService deleteAllLogs(Handler<AsyncResult<Void>> resultHandler) {
+    dbClient.rxQuery(sqlQueries.get(SqlQuery.DELETE_ALL_LOGS)).toCompletable()
         .subscribe(CompletableHelper.toObserver(resultHandler));
     return this;
   }

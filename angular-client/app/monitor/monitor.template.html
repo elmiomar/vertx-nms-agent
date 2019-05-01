@@ -7,6 +7,11 @@
                     <h3 class="md-headline">Event Bus Monitoring</h3>
                 </div>
 
+                <md-button class="md-icon-button" ng-show="logs.length > 1"
+                    ng-click="deleteAllLogsAndConfirm($event)">
+                    <md-tooltip md-direction="top">Delete all logs</md-tooltip>
+                    <md-icon aria-label="Delete" style="color:white;">delete</md-icon>
+                </md-button>
             </div>
         </md-toolbar>
 
@@ -26,7 +31,7 @@
                     <tbody>
                         <tr ng-repeat="log in logs">
                             <td>{{ log.timestamp }}</td>
-                            <td>{{ log.entity }}</td>
+                            <td>{{ log.verticle }}</td>
                             <td>{{ log.level }}</td>
                             <td>{{ log.message }}</td>
                         </tr>

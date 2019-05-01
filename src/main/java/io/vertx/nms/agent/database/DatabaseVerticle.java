@@ -1,10 +1,10 @@
 
 package io.vertx.nms.agent.database;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
+import io.vertx.nms.agent.common.BaseVerticle;
 import io.vertx.serviceproxy.ServiceBinder;
 
 import java.io.FileInputStream;
@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Properties;
 
-public class DatabaseVerticle extends AbstractVerticle {
+public class DatabaseVerticle extends BaseVerticle {
 
   public static final String CONFIG_DB_JDBC_URL = "db.jdbc.url";
   public static final String CONFIG_DB_JDBC_DRIVER_CLASS = "db.jdbc.driver_class";
@@ -42,9 +42,6 @@ public class DatabaseVerticle extends AbstractVerticle {
     });
   }
 
-  /*
-   * Note: this uses blocking APIs, but data is small...
-   */
   private HashMap<SqlQuery, String> loadSqlQueries() throws IOException {
 
     String queriesFile = config().getString(CONFIG_DB_SQL_QUERIES_RESOURCE_FILE);
@@ -82,6 +79,7 @@ public class DatabaseVerticle extends AbstractVerticle {
     sqlQueries.put(SqlQuery.GET_LOG_BY_ID, queriesProps.getProperty("get-log-by-id"));
     sqlQueries.put(SqlQuery.CREATE_LOG, queriesProps.getProperty("create-log"));
     sqlQueries.put(SqlQuery.DELETE_LOG, queriesProps.getProperty("delete-log"));
+    sqlQueries.put(SqlQuery.DELETE_ALL_LOGS, queriesProps.getProperty("delete-all-logs"));
 
     return sqlQueries;
   }

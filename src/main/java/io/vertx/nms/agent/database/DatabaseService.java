@@ -84,5 +84,8 @@ public interface DatabaseService {
   @Fluent
   DatabaseService deleteLog(int logId, Handler<AsyncResult<Void>> resultHandler);
 
+  @Fluent
+  DatabaseService deleteAllLogs(Handler<AsyncResult<Void>> resultHandler);
+
 
 }

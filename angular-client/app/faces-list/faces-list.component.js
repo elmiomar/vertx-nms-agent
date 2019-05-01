@@ -163,7 +163,7 @@ component('facesList', {
             console.log('calling service Face.deleteFace()');
             Face.deleteFace(id).then(function successCallback(response) {
                     // tell the user face record was deleted
-                    $scope.showToast(response.data.message);
+                    $scope.showToast("Deleted face with id= " + id + " successfully!");
                     // refresh the list
                     $scope.readFaces();
                 },

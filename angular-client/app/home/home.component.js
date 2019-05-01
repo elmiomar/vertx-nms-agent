@@ -10,7 +10,7 @@ angular.module('home').component('home', {
             link: 'fib',
             icon: 'fas fa-image'
         }, {
-            label: 'EVENTBUS',
+            label: 'MONITORING',
             link: 'monitor',
             icon: 'fas fa-image'
         }];
