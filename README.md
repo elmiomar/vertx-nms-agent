@@ -1,6 +1,7 @@
 # vertx-nms-agent
 NDN management agent using vertx-io toolkit.
 
+<p align="center"><img src="/img/Vert.x_first_program-Agent.png" width="550"></p>
 
 ### Install and Run
 
